@@ -4,14 +4,14 @@ pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
-import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol";
 
 error OnePiece__UpkeepNotNeeded(uint256 currentBalance, uint256 playerNum, uint256 treasureState);
 error OnePiece__NotEnoughETHEntered();
 error OnePiece__TransferFailed();
 error OnePiece__NotOpen();
 
-contract OnePiece is VRFConsumerBaseV2, AutomationCompatibleInterface {
+contract OnePiece is VRFConsumerBaseV2, KeeperCompatibleInterface {
 
     // Type Declarations
     enum TreasureState {
@@ -118,7 +118,7 @@ contract OnePiece is VRFConsumerBaseV2, AutomationCompatibleInterface {
             revert OnePiece__TransferFailed();
         }        
         emit FinderPicked(recentFinder);
-    }
+    }    
 
     // View functions
     function getEntranceFee () public view returns (uint256){
@@ -152,4 +152,9 @@ contract OnePiece is VRFConsumerBaseV2, AutomationCompatibleInterface {
     function getRequestConfirmations() public pure returns (uint256){
         return REQUEST_CONFIRMATIONS;
     }
+
+    function getInterval() public view returns(uint256){
+        return i_interval;
+    }
+    
 }
