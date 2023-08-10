@@ -1,8 +1,5 @@
 const { network, ethers } = require("hardhat");
-const {
-    developmentChains,
-    networkConfig,
-} = require("../helper-hardhat-config");
+const { developmentChains, networkConfig } = require("../helper-hardhat-config");
 const { verify } = require("../utils/verify");
 
 const VRF_SUB_FUND_AMOUNT = ethers.parseEther("0.02");
@@ -12,23 +9,22 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
     const { deployer } = await getNamedAccounts();
     const chainId = network.config.chainId;
 
-    let vrfCoordinatorv2Address, subscriptionId, vrfCoordinatorV2Mock;
-    if (developmentChains.includes(network.name)) {
-        vrfCoordinatorV2Mock = await deployments.get("VRFCoordinatorV2Mock");
-        vrfCoordinatorv2Address = vrfCoordinatorV2Mock.address;
+    let vrfCoordinatorV2Address, subscriptionId, vrfCoordinatorV2Mock;
 
-        const transactionResponse =
-            await vrfCoordinatorV2Mock.createSubscription();
+    if (developmentChains.includes(network.name)) {
+        vrfCoordinatorV2Mock = await ethers.getContract("VRFCoordinatorV2Mock");
+        vrfCoordinatorV2Address = await vrfCoordinatorV2Mock.getAddress();
+        log(vrfCoordinatorV2Address);
+
+        const transactionResponse = await vrfCoordinatorV2Mock.createSubscription();
         const transactionReciept = await transactionResponse.wait(1);
         log(transactionReciept);
-        subscritptionId = transactionReciept.events[1].args.subId;
-        await vrfCoordinatorV2Mock.fundSubscription(
-            subscritptionId,
-            VRF_SUB_FUND_AMOUNT
-        );
+        //subscritptionId = await transactionReciept.events[0].args.subId;
+        subscriptionId = 1;
+        await vrfCoordinatorV2Mock.fundSubscription(subscriptionId, VRF_SUB_FUND_AMOUNT);
         //subscriptionId = 0;
     } else {
-        vrfCoordinatorv2Address = networkConfig[chainId]["vrfCoordinatorV2"];
+        vrfCoordinatorV2Address = networkConfig[chainId]["vrfCoordinatorV2"];
         subscriptionId = networkConfig[chainId]["subscriptionId"];
     }
 
@@ -38,7 +34,7 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
     const interval = networkConfig[chainId]["interval"];
 
     args = [
-        vrfCoordinatorv2Address,
+        vrfCoordinatorV2Address,
         entranceFee,
         gasLane,
         subscriptionId,
@@ -51,11 +47,11 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
         log: true,
         waitConfirmations: network.config.blockConfirmations || 1,
     });
-
-    if (
-        !developmentChains.includes(network.name) &&
-        process.env.ETHERSCAN_API_KEY
-    ) {
+    if (developmentChains.includes(network.name)) {
+        await vrfCoordinatorV2Mock.addConsumer(subscriptionId, onepiece.address);
+        log("Consumer is added");
+    }
+    if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
         log("Verifying...");
         await verify(onepiece.address, args);
     }

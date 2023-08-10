@@ -44,5 +44,8 @@ module.exports = {
         currency: "INR",
         coinmarketcap: COINMARKET_API_KEY,
     },
+    mocha: {
+        timeout: 200000,
+    },
 };
 
