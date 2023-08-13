@@ -165,10 +165,10 @@ const { assert, expect } = require("chai");
                       await new Promise(async (resolve, reject) => {
                           onepiece.once("WinnerPicked", async () => {
                               try {
-                                  const recentWinner = await onepiece.getRecentWinner();
+                                  const recentWinner = await onepiece.getRecentFinder();
                                   const treasureState = await onepiece.getTreasureState();
                                   const endingTimeStamp = await onepiece.getLatestTimeStamp();
-                                  const numPlayers = await onepiece.getNumberOfPlayers();
+                                  const numPlayers = await onepiece.getNumOfPlayers();
                                   assert.equal(numPlayers.toString(), "0");
                                   assert.equal(treasureState.toString(), "0");
                                   assert(endingTimeStamp > startingTimeStamp);
